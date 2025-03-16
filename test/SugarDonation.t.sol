@@ -34,10 +34,7 @@ contract SugarDonationTest is Test {
         vm.prank(creator);
         sugarDonation.whitelistToken(address(token));
 
-        assertTrue(
-            sugarDonation.isTokenWhitelisted(creator, address(token)),
-            "Token should be whitelisted"
-        );
+        assertTrue(sugarDonation.isTokenWhitelisted(creator, address(token)), "Token should be whitelisted");
     }
 
     function testDonate() public {
@@ -50,23 +47,11 @@ contract SugarDonationTest is Test {
         vm.prank(donor);
         sugarDonation.donate(creator, address(token), 100 * 10 ** 18);
 
-        assertEq(
-            sugarDonation.totalDonations(creator),
-            98 * 10 ** 18,
-            "Total donations should be 98 MTK"
-        );
+        assertEq(sugarDonation.totalDonations(creator), 98 * 10 ** 18, "Total donations should be 98 MTK");
 
-        assertEq(
-            token.balanceOf(deployer),
-            2 * 10 ** 18,
-            "Deployer should receive 2 MTK as fee"
-        );
+        assertEq(token.balanceOf(deployer), 2 * 10 ** 18, "Deployer should receive 2 MTK as fee");
 
-        assertEq(
-            token.balanceOf(creator),
-            98 * 10 ** 18,
-            "Creator should receive 98 MTK"
-        );
+        assertEq(token.balanceOf(creator), 98 * 10 ** 18, "Creator should receive 98 MTK");
     }
 
     function testDonateWithNonWhitelistedToken() public {
