@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract SugarDonation is Ownable {
     event DonationReceived(address indexed donor, address indexed creator, address token, uint256 amount);
-
     event TokenWhitelisted(address indexed creator, address token);
 
     mapping(address => mapping(address => bool)) public whitelistedTokens;

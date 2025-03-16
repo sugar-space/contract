@@ -11,7 +11,6 @@ contract DeploySugarDonation is Script {
         vm.startBroadcast();
 
         SugarDonation sugarDonation = new SugarDonation();
-
         console.log("SugarDonation deployed at:", address(sugarDonation));
 
         vm.stopBroadcast();

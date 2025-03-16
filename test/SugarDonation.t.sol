@@ -26,7 +26,6 @@ contract SugarDonationTest is Test {
         sugarDonation = new SugarDonation();
 
         token = new MockToken("MockToken", "MTK");
-
         token.transfer(donor, 1000 * 10 ** 18);
     }
 
@@ -48,9 +47,7 @@ contract SugarDonationTest is Test {
         sugarDonation.donate(creator, address(token), 100 * 10 ** 18);
 
         assertEq(sugarDonation.totalDonations(creator), 98 * 10 ** 18, "Total donations should be 98 MTK");
-
         assertEq(token.balanceOf(deployer), 2 * 10 ** 18, "Deployer should receive 2 MTK as fee");
-
         assertEq(token.balanceOf(creator), 98 * 10 ** 18, "Creator should receive 98 MTK");
     }
 
