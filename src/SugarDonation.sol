@@ -9,6 +9,7 @@ contract SugarDonation is Ownable {
     event DonationReceived(address indexed donor, address indexed creator, address token, uint256 amount);
     event TokenWhitelisted(address indexed creator, address token);
     event Withdraw(address indexed recipient, address token, uint256 amount);
+    event EtherWithdrawn(address indexed recipient, uint256 amount);
 
     mapping(address => mapping(address => bool)) public whitelistedTokens;
     mapping(address => mapping(address =>uint256)) public creatorBalances;
@@ -60,7 +61,8 @@ contract SugarDonation is Ownable {
         require(amount > 0, "No fees to withdraw");
 
         ownerFee[token] = 0; 
-        IERC20(token).transfer(msg.sender, amount); 
+        bool transferSuccess = IERC20(token).transfer(msg.sender, amount);
+        require(transferSuccess, "Owner fee transfer failed");
 
         emit Withdraw(msg.sender, token, amount);
     }
@@ -70,10 +72,22 @@ contract SugarDonation is Ownable {
         require(amount > 0, "No funds to withdraw");
 
         creatorBalances[msg.sender][token] = 0; 
-        IERC20(token).transfer(msg.sender, amount); 
+
+        bool transferSuccess = IERC20(token).transfer(msg.sender, amount);
+        require(transferSuccess, "Creator funds transfer failed");
 
         emit Withdraw(msg.sender, token, amount);
     }
+    function withdrawEther() external onlyOwner {
+        uint256 amount = address(this).balance; 
+        require(amount > 0, "No Ether to withdraw");
+
+        (bool success, ) = msg.sender.call{value: amount}("");
+        require(success, "Ether transfer failed");
+
+        emit EtherWithdrawn(msg.sender, amount);
+    }
+
 
     function isTokenWhitelisted(address creator, address token) external view returns (bool) {
         return whitelistedTokens[creator][token];
