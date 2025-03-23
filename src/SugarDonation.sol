@@ -56,7 +56,7 @@ contract SugarDonation is Ownable {
         bool donationSuccess = IERC20(token).transferFrom(msg.sender, creator, amountAfterFee);
         require(donationSuccess, "Donation transfer failed");
     }
-    function withdrawOwnerFees(address token) external onlyOwner {
+    function withdrawOwnerFees(address token) external nonReentrant onlyOwner {
         uint256 amount = ownerFee[token];
         require(amount > 0, "No fees to withdraw");
 
@@ -67,7 +67,7 @@ contract SugarDonation is Ownable {
         emit Withdraw(msg.sender, token, amount);
     }
 
-    function withdrawCreatorFunds(address token) external {
+    function withdrawCreatorFunds(address token) external nonReentrant {
         uint256 amount = creatorBalances[msg.sender][token];
         require(amount > 0, "No funds to withdraw");
 
@@ -78,13 +78,11 @@ contract SugarDonation is Ownable {
 
         emit Withdraw(msg.sender, token, amount);
     }
-    function withdrawEther() external onlyOwner {
+    function withdrawEther(address payable _owner) external onlyOwner {
         uint256 amount = address(this).balance; 
         require(amount > 0, "No Ether to withdraw");
 
-        (bool success, ) = msg.sender.call{value: amount}("");
-        require(success, "Ether transfer failed");
-
+        _owner.transfer(amount);
         emit EtherWithdrawn(msg.sender, amount);
     }
 
