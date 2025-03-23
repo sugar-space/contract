@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -12,9 +11,8 @@ contract SugarDonation is Ownable {
     event EtherWithdrawn(address indexed recipient, uint256 amount);
 
     mapping(address => mapping(address => bool)) public whitelistedTokens;
-    mapping(address => mapping(address =>uint256)) public creatorBalances;
+    mapping(address => mapping(address => uint256)) public creatorBalances;
     mapping(address => uint256) public ownerFee;
-    
 
     bool private _notEntered;
 
@@ -36,8 +34,7 @@ contract SugarDonation is Ownable {
         emit TokenWhitelisted(msg.sender, token);
     }
 
-
-    function donate(address creator, address token, uint256 amount) external  nonReentrant payable{
+    function donate(address creator, address token, uint256 amount) external payable nonReentrant {
         require(msg.value > 0, "Amount must be greater than 0");
         require(whitelistedTokens[creator][token], "Token not whitelisted by the creator");
 
@@ -45,8 +42,6 @@ contract SugarDonation is Ownable {
         uint256 amountAfterFee = amount - fee;
         ownerFee[token] += fee;
         creatorBalances[creator][token] += amountAfterFee;
-        
-
 
         emit DonationReceived(msg.sender, creator, token, amountAfterFee);
 
@@ -56,11 +51,12 @@ contract SugarDonation is Ownable {
         bool donationSuccess = IERC20(token).transferFrom(msg.sender, creator, amountAfterFee);
         require(donationSuccess, "Donation transfer failed");
     }
+
     function withdrawOwnerFees(address token) external nonReentrant onlyOwner {
         uint256 amount = ownerFee[token];
         require(amount > 0, "No fees to withdraw");
 
-        ownerFee[token] = 0; 
+        ownerFee[token] = 0;
         bool transferSuccess = IERC20(token).transfer(msg.sender, amount);
         require(transferSuccess, "Owner fee transfer failed");
 
@@ -71,21 +67,24 @@ contract SugarDonation is Ownable {
         uint256 amount = creatorBalances[msg.sender][token];
         require(amount > 0, "No funds to withdraw");
 
-        creatorBalances[msg.sender][token] = 0; 
+        creatorBalances[msg.sender][token] = 0;
 
         bool transferSuccess = IERC20(token).transfer(msg.sender, amount);
         require(transferSuccess, "Creator funds transfer failed");
 
         emit Withdraw(msg.sender, token, amount);
     }
-    function withdrawEther(address payable _owner) external onlyOwner {
-        uint256 amount = address(this).balance; 
+
+    function withdrawEther(address payable recipient) external onlyOwner nonReentrant {
+        require(recipient != address(0), "Recipient cannot be zero address");
+        uint256 amount = address(this).balance;
         require(amount > 0, "No Ether to withdraw");
 
-        _owner.transfer(amount);
-        emit EtherWithdrawn(msg.sender, amount);
-    }
+        emit EtherWithdrawn(recipient, amount);
 
+        (bool success,) = recipient.call{value: amount}("");
+        require(success, "Ether transfer failed");
+    }
 
     function isTokenWhitelisted(address creator, address token) external view returns (bool) {
         return whitelistedTokens[creator][token];
