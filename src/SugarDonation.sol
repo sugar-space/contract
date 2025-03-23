@@ -86,7 +86,7 @@ contract SugarDonation is Ownable {
 
         _owner.transfer(amount);
 
-        emit EtherWithdrawn(msg.sender, amount);
+        emit EtherWithdrawn(owner(), amount);
     }
 
 

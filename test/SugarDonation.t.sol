@@ -116,6 +116,18 @@ contract SugarDonationTest is Test {
         vm.expectRevert("No fees to withdraw");
         sugarDonation.withdrawOwnerFees(address(token));
     }
+
+    function testWithdrawEther() public {
+        uint256 amount = 1 ether;
+        vm.deal(donor, amount);
+
+        uint256 ownerBalanceBefore = deployer.balance;
+
+        vm.prank(deployer);
+        sugarDonation.withdrawEther(deployer);
+
+        assertEq(deployer.balance, ownerBalanceBefore + amount);
+    }
     
 }
 
