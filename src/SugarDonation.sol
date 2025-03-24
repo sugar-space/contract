@@ -7,16 +7,22 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract SugarDonation is Ownable {
     event DonationReceived(address indexed donor, address indexed creator, address token, uint256 amount);
+    event Withdraw(address indexed recipient, address token, uint256 amount);
+    event EtherWithdrawn(address indexed recipient, uint256 amount);
     event TokenWhitelisted(address indexed creator, address token, bool status);
 
     mapping(address => mapping(address => bool)) public whitelistedTokens;
-    mapping(address => uint256) public totalDonations;
+    mapping(address => mapping(address =>uint256)) public creatorBalances;
+    mapping(address => mapping(address =>uint256)) public ownerFee;
+    
+
 
     bool private _notEntered;
 
     uint256 public constant FEE_PERCENTAGE = 2; // fee 2%
 
     constructor() Ownable(msg.sender) {
+        
         _notEntered = true;
     }
 
@@ -32,24 +38,65 @@ contract SugarDonation is Ownable {
         emit TokenWhitelisted(msg.sender, token, status);
     }
 
-    function donate(address creator, address token, uint256 amount) external nonReentrant {
+
+    function donate(address creator, address token, uint256 amount) external  nonReentrant payable{
+        require(amount > 0, "Amount must be greater than 0");
         require(whitelistedTokens[creator][token], "Token not whitelisted by the creator");
 
         uint256 fee = (amount * FEE_PERCENTAGE) / 100;
         uint256 amountAfterFee = amount - fee;
-
-        totalDonations[creator] += amountAfterFee;
-
+        if(token == address(0)){
+            require(msg.value == amount, "Ether value must be equal to amount");
+        } else {
+            require(msg.value == 0, "Do not send ETH with ERC20 donation");
+            bool success = IERC20(token).transferFrom(msg.sender, address(this), amount);
+            require(success, "ERC20 transfer failed");
+        }
+        ownerFee[owner()][token] += fee;
+        address currentOwner = owner();
+        creatorBalances[creator][token] += amountAfterFee;
+        
         emit DonationReceived(msg.sender, creator, token, amountAfterFee);
-
-        bool feeSuccess = IERC20(token).transferFrom(msg.sender, owner(), fee);
-        require(feeSuccess, "Fee transfer failed");
-
-        bool donationSuccess = IERC20(token).transferFrom(msg.sender, creator, amountAfterFee);
-        require(donationSuccess, "Donation transfer failed");
     }
 
+function withdrawOwnerFees(address token) external nonReentrant onlyOwner {
+        address currentOwner = owner();
+        uint256 amount = ownerFee[currentOwner][token];
+        require(amount > 0, "No fees to withdraw");
+
+        ownerFee[currentOwner][token] = 0;
+
+        if (token == address(0)) {
+            (bool success, ) = currentOwner.call{value: amount}("");
+            require(success, "ETH transfer failed");
+        } else {
+            bool success = IERC20(token).transfer(currentOwner, amount);
+            require(success, "ERC20 transfer failed");
+        }
+
+        emit Withdraw(currentOwner, token, amount);
+    }
+
+    function withdrawCreatorFunds(address token) external nonReentrant {
+        uint256 amount = creatorBalances[msg.sender][token];
+        require(amount > 0, "No funds to withdraw");
+
+        creatorBalances[msg.sender][token] = 0;
+
+        if (token == address(0)) {
+            (bool success, ) = msg.sender.call{value: amount}("");
+            require(success, "ETH transfer failed");
+        } else {
+            bool success = IERC20(token).transfer(msg.sender, amount);
+            require(success, "ERC20 transfer failed");
+        }
+
+        emit Withdraw(msg.sender, token, amount);
+    }
+
+     /** @notice Check if a token is whitelisted by a creator */
     function isTokenWhitelisted(address creator, address token) external view returns (bool) {
         return whitelistedTokens[creator][token];
     }
 }
+
