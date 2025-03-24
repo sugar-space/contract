@@ -45,52 +45,58 @@ contract SugarDonation is Ownable {
 
         uint256 fee = (amount * FEE_PERCENTAGE) / 100;
         uint256 amountAfterFee = amount - fee;
+        if(token == address(0)){
+            require(msg.value == amount, "Ether value must be equal to amount");
+        } else {
+            require(msg.value == 0, "Do not send ETH with ERC20 donation");
+            bool success = IERC20(token).transferFrom(msg.sender, address(this), amount);
+            require(success, "ERC20 transfer failed");
+        }
         ownerFee[owner()][token] += fee;
+        address currentOwner = owner();
         creatorBalances[creator][token] += amountAfterFee;
         
-
-
         emit DonationReceived(msg.sender, creator, token, amountAfterFee);
-
-        bool feeSuccess = IERC20(token).transferFrom(msg.sender, owner(), fee);
-        require(feeSuccess, "Fee transfer failed");
-
-        bool donationSuccess = IERC20(token).transferFrom(msg.sender, creator, amountAfterFee);
-        require(donationSuccess, "Donation transfer failed");
     }
-    function withdrawOwnerFees(address token) external nonReentrant onlyOwner {
-        uint256 amount = ownerFee[owner()][token];
+
+function withdrawOwnerFees(address token) external nonReentrant onlyOwner {
+        address currentOwner = owner();
+        uint256 amount = ownerFee[currentOwner][token];
         require(amount > 0, "No fees to withdraw");
 
-        ownerFee[owner()][token] =0 ; 
-        bool transferSuccess = IERC20(token).transfer(owner(), amount);
-        require(transferSuccess, "Owner fee transfer failed");
+        ownerFee[currentOwner][token] = 0;
 
-        emit Withdraw(owner(), token, amount);
+        if (token == address(0)) {
+            (bool success, ) = currentOwner.call{value: amount}("");
+            require(success, "ETH transfer failed");
+        } else {
+            bool success = IERC20(token).transfer(currentOwner, amount);
+            require(success, "ERC20 transfer failed");
+        }
+
+        emit Withdraw(currentOwner, token, amount);
     }
 
     function withdrawCreatorFunds(address token) external nonReentrant {
         uint256 amount = creatorBalances[msg.sender][token];
         require(amount > 0, "No funds to withdraw");
 
-        creatorBalances[msg.sender][token] = 0; 
+        creatorBalances[msg.sender][token] = 0;
 
-        bool transferSuccess = IERC20(token).transfer(msg.sender, amount);
-        require(transferSuccess, "Creator funds transfer failed");
+        if (token == address(0)) {
+            (bool success, ) = msg.sender.call{value: amount}("");
+            require(success, "ETH transfer failed");
+        } else {
+            bool success = IERC20(token).transfer(msg.sender, amount);
+            require(success, "ERC20 transfer failed");
+        }
 
         emit Withdraw(msg.sender, token, amount);
     }
-    function withdrawEther(address payable _owner) external onlyOwner {
-        uint256 amount = address(this).balance; 
-        require(amount > 0, "No Ether to withdraw");
 
-        _owner.transfer(amount);
-
-        emit EtherWithdrawn(owner(), amount);
-    }
-
-
+     /** @notice Check if a token is whitelisted by a creator */
     function isTokenWhitelisted(address creator, address token) external view returns (bool) {
         return whitelistedTokens[creator][token];
     }
 }
+
