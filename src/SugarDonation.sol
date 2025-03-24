@@ -7,9 +7,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract SugarDonation is Ownable {
     event DonationReceived(address indexed donor, address indexed creator, address token, uint256 amount);
-    event TokenWhitelisted(address indexed creator, address token);
     event Withdraw(address indexed recipient, address token, uint256 amount);
     event EtherWithdrawn(address indexed recipient, uint256 amount);
+    event TokenWhitelisted(address indexed creator, address token, bool status);
 
     mapping(address => mapping(address => bool)) public whitelistedTokens;
     mapping(address => mapping(address =>uint256)) public creatorBalances;
@@ -33,9 +33,9 @@ contract SugarDonation is Ownable {
         _notEntered = true;
     }
 
-    function whitelistToken(address token) external {
-        whitelistedTokens[msg.sender][token] = true;
-        emit TokenWhitelisted(msg.sender, token);
+    function setWhitelistToken(address token, bool status) external {
+        whitelistedTokens[msg.sender][token] = status;
+        emit TokenWhitelisted(msg.sender, token, status);
     }
 
 

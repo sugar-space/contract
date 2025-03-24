@@ -19,18 +19,15 @@ deploy:
 	set +a; \
 	source .env; \
 	set -a; \
-	forge create \
+	forge script \
+	script/SugarDonation.s.sol:DeploySugarDonation \
 	--rpc-url $$RPC_URL \
 	--private-key $$PRIVATE_KEY \
-	--gas-limit 10000000 \
-	--gas-price 10000000000 \
-	--optimize \
-	--optimizer-runs 200 \
 	--broadcast \
 	--verify \
-	--verifier blockscout \
-	--verifier-url $$VERIFIER_URL \
-	src/SugarDonation.sol:SugarDonation \
+	--etherscan-api-key $$ETHERSCAN_API_KEY
+
+
 
 .PHONY: install
 install:

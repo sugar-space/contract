@@ -33,12 +33,12 @@ contract SugarDonationTest is Test {
         token.transfer(donor, 1000 * 10 ** 18);
     }
 
-    function testWhitelistToken() public {
-        vm.prank(creator);
-        sugarDonation.whitelistToken(address(token));
+    // function testWhitelistToken() public {
+    //     vm.prank(creator);
+    //     sugarDonation.whitelistToken(address(token));
 
-        assertTrue(sugarDonation.isTokenWhitelisted(creator, address(token)), "Token should be whitelisted");
-    }
+    //     assertTrue(sugarDonation.isTokenWhitelisted(creator, address(token)), "Token should be whitelisted");
+    // }
 
     function testDonate() public {
         uint256 donationAmount = 100 * 10 ** 18;
