@@ -6,12 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract SugarDonation is Ownable {
-    event DonationReceived(
-        address indexed donor,
-        address indexed creator,
-        address token,
-        uint256 amount
-    );
+    event DonationReceived(address indexed donor, address indexed creator, address token, uint256 amount);
     event TokenWhitelisted(address indexed creator, address token, bool status);
 
     mapping(address => mapping(address => bool)) public whitelistedTokens;
@@ -37,15 +32,8 @@ contract SugarDonation is Ownable {
         emit TokenWhitelisted(msg.sender, token, status);
     }
 
-    function donate(
-        address creator,
-        address token,
-        uint256 amount
-    ) external nonReentrant {
-        require(
-            whitelistedTokens[creator][token],
-            "Token not whitelisted by the creator"
-        );
+    function donate(address creator, address token, uint256 amount) external nonReentrant {
+        require(whitelistedTokens[creator][token], "Token not whitelisted by the creator");
 
         uint256 fee = (amount * FEE_PERCENTAGE) / 100;
         uint256 amountAfterFee = amount - fee;
@@ -57,18 +45,11 @@ contract SugarDonation is Ownable {
         bool feeSuccess = IERC20(token).transferFrom(msg.sender, owner(), fee);
         require(feeSuccess, "Fee transfer failed");
 
-        bool donationSuccess = IERC20(token).transferFrom(
-            msg.sender,
-            creator,
-            amountAfterFee
-        );
+        bool donationSuccess = IERC20(token).transferFrom(msg.sender, creator, amountAfterFee);
         require(donationSuccess, "Donation transfer failed");
     }
 
-    function isTokenWhitelisted(
-        address creator,
-        address token
-    ) external view returns (bool) {
+    function isTokenWhitelisted(address creator, address token) external view returns (bool) {
         return whitelistedTokens[creator][token];
     }
 }
