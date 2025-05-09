@@ -12,6 +12,9 @@ jobs:
   check:
     strategy:
       fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+        node: [20, 22]
 
     name: Foundry project
     runs-on: ubuntu-latest
@@ -22,6 +25,10 @@ jobs:
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Install Deps
+        uses: |
+          make install
 
       - name: Show Forge version
         run: |
