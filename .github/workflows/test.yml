@@ -13,8 +13,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest]
-        version: [20]
+        version: [1]
 
     name: Foundry project
     runs-on: ubuntu-latest
@@ -28,7 +27,7 @@ jobs:
 
       - name: Install Deps
         run: |
-          make install
+          forge install https://github.com/foundry-rs/forge-std https://github.com/OpenZeppelin/openzeppelin-contracts
 
       - name: Show Forge version
         run: |
