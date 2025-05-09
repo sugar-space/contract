@@ -27,7 +27,7 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
 
       - name: Install Deps
-        uses: |
+        run: |
           make install
 
       - name: Show Forge version
