@@ -27,7 +27,22 @@ deploy:
 	--verify \
 	--etherscan-api-key $$ETHERSCAN_API_KEY
 
-
+.PHONY: deploy-bs
+deploy-bs:
+	set +a; \
+	source .env; \
+	set -a; \
+	forge script \
+	script/SugarDonation.s.sol:DeploySugarDonation \
+	--rpc-url $$RPC_URL \
+	--private-key $$PRIVATE_KEY \
+	--broadcast \
+	--optimize \
+	--optimizer-runs 100 \
+	--skip-simulation \
+	--verify \
+	--verifier-url https://sepolia-blockscout.lisk.com/api \
+	--verifier blockscout
 
 .PHONY: install
 install:
