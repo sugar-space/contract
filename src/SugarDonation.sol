@@ -14,12 +14,7 @@ contract SugarDonation is Ownable {
     /// @param creator Address of the creator receiving the donation.
     /// @param token Address of the token donated (address(0) for ETH).
     /// @param amount Amount of tokens (or ETH) donated after fees.
-    event DonationReceived(
-        address indexed sender,
-        address indexed creator,
-        address token,
-        uint256 amount
-    );
+    event DonationReceived(address indexed sender, address indexed creator, address token, uint256 amount);
 
     /// @notice Emitted when funds are withdrawn.
     /// @param recipient Address receiving the withdrawn funds.
@@ -73,18 +68,11 @@ contract SugarDonation is Ownable {
     /// @param creator Address of the creator to receive the donation.
     /// @param token Address of the token to donate (address(0) for ETH).
     /// @param amount Amount of tokens (or ETH) to donate.
-    function donate(
-        address creator,
-        address token,
-        uint256 amount
-    ) external payable nonReentrant {
+    function donate(address creator, address token, uint256 amount) external payable nonReentrant {
         require(amount > 0, "Amount must be greater than 0");
 
         if (token != address(0)) {
-            require(
-                whitelistedTokens[creator][token],
-                "Token not whitelisted by the creator"
-            );
+            require(whitelistedTokens[creator][token], "Token not whitelisted by the creator");
         }
 
         uint256 fee = (amount * FEE_PERCENTAGE) / 100;
@@ -97,11 +85,7 @@ contract SugarDonation is Ownable {
             require(msg.value == amount, "Ether value must be equal to amount");
         } else {
             require(msg.value == 0, "Do not send ETH with ERC20 donation");
-            bool success = IERC20(token).transferFrom(
-                msg.sender,
-                address(this),
-                amount
-            );
+            bool success = IERC20(token).transferFrom(msg.sender, address(this), amount);
             require(success, "ERC20 transfer failed");
         }
 
@@ -119,7 +103,7 @@ contract SugarDonation is Ownable {
         ownerFees[currentOwner][token] = 0;
 
         if (token == address(0)) {
-            (bool success, ) = currentOwner.call{value: amount}("");
+            (bool success,) = currentOwner.call{value: amount}("");
             require(success, "ETH transfer failed");
         } else {
             bool success = IERC20(token).transfer(currentOwner, amount);
@@ -138,7 +122,7 @@ contract SugarDonation is Ownable {
         creatorBalances[msg.sender][token] = 0;
 
         if (token == address(0)) {
-            (bool success, ) = msg.sender.call{value: amount}("");
+            (bool success,) = msg.sender.call{value: amount}("");
             require(success, "ETH transfer failed");
         } else {
             bool success = IERC20(token).transfer(msg.sender, amount);
@@ -152,10 +136,7 @@ contract SugarDonation is Ownable {
     /// @param creator Address of the creator.
     /// @param token Address of the token to check.
     /// @return Boolean indicating if the token is whitelisted.
-    function isTokenWhitelisted(
-        address creator,
-        address token
-    ) external view returns (bool) {
+    function isTokenWhitelisted(address creator, address token) external view returns (bool) {
         return whitelistedTokens[creator][token];
     }
 }
