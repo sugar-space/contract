@@ -1,66 +1,48 @@
-## Foundry
+# Sugar Contracts
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+Smart contracts for Sugar, a Web3-native platform empowering streamers and communities to connect, collaborate, and monetize transparently.
 
-Foundry consists of:
+## ⚙️ Tech Stack
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+- **Foundry** – Fast, modular testing and deployment framework for Solidity  
+- **Forge Std** – Testing utilities and cheatcodes  
+- **OpenZeppelin Contracts** – Secure, audited smart contract libraries
 
-## Documentation
+## 🔨 Setup
 
-https://book.getfoundry.sh/
+1. Install Foundry:
 
-## Usage
+   ```bash
+   curl -L https://foundry.paradigm.xyz | bash
+   foundryup
+    ````
 
-### Build
+1. Install dependencies:
 
-```shell
-$ forge build
-```
+   ```bash
+   npm install
+   ```
 
-### Test
+## 🚀 Scripts
 
-```shell
-$ forge test
-```
+- Run tests:
 
-### Format
+  ```bash
+  forge test
+  ```
 
-```shell
-$ forge fmt
-```
+- Run a script (e.g., deploy):
 
-### Gas Snapshots
+  ```bash
+  forge script script/SugarDonation.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast
+  ```
 
-```shell
-$ forge snapshot
-```
+## 👥 Team
 
-### Anvil
+Built with ❤️ by:
 
-```shell
-$ anvil
-```
+- **Rei Yan**
+- **Jo**
+- **Rama**
 
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+Part of the Sugar project: [github.com/sugar-space](https://github.com/sugar-space)
